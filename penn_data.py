@@ -100,7 +100,7 @@ class Node(object):
         self.parent = parent
         self.siblings = []
         self.children = [] if not children else children
-        self.is_terminal = True if isinstance(self.children, list) else False
+        self.is_terminal = False if isinstance(self.children, list) else True
 
     def get_parent(self, tag):
         curr = self
@@ -114,7 +114,7 @@ class Node(object):
     def add_child(self, node):
         if not isinstance(node, Node):
             raise ValueError("Cannot append node of type: [%s]" % type(node))
-        if not self.is_terminal:
+        if self.is_terminal:
             raise ValueError("Cannot append node to terminal")
         else:
             for child in self.children:
@@ -184,103 +184,28 @@ ex2 = ['A',
           ['A3522', 'tag']]]],
        ['A4', 'tag']]
 
-ex3 = ['IP-MAT',
- ['NP-LFD',
-  ['D', '+Tys'],
-  ['N', 'vertu'],
-  [',', ','],
-  ['IP-MAT-PRN',
-   ['NP-SBJ', ['D', '+tat']],
-   ['BEP', 'is'],
-   ['IP-INF',
-    ['TO', 'to'],
-    ['VB', 'seye'],
-    ['PP',
-     ['P', 'of'],
-     ['NP', ['N', 'maydenhood'], ['CONJ', 'or'], ['N', 'chastite']]]]]],
- [',', ','],
- ['NP-SBJ-RSP', ['PRO', 'hit']],
- ['BEP', 'is'],
- ['NP-OB1',
-  ['NP', ['D', 'a'], ['ADJ', 'wylful'], ['N', 'sacryfyse']],
-  ['CONJP',
-   ['CONJ', 'and'],
-   ['NP',
-    ['D', 'an'],
-    ['N', 'offryngge'],
-    ['PP', ['P', 'to'], ['NP', ['NPR', 'God']]],
-    ['ADJP', ['ADJ', 'vre'], ['CONJ', 'and'], ['ADJ', 'liberal']]]],
-  [',', ','],
-  ['CP-REL',
-   ['WPP-1', ['P', 'to'], ['WNP', ['D', '+te'], ['WPRO', 'whyche']]],
-   ['C', '0'],
-   ['IP-SUB',
-    ['IP-SUB',
-     ['PP', '*T*-1'],
-     ['NP-SBJ', ['Q', 'no'], ['N', 'lawe']],
-     ['VBP', 'dryf+t']],
-    [',', ','],
-    ['CONJP',
-     ['IP-SUB',
-      ['PP', '*T*-1'],
-      ['NP-SBJ', ['Q', 'no'], ['N', 'nyede']],
-      ['VBP', 'constreyne+t']]],
-    [',', ','],
-    ['CONJP',
-     ['IP-SUB',
-      ['PP', '*T*-1'],
-      ['NP-SBJ', ['Q', 'non'], ['N', 'heste']],
-      ['VBP', 'bynt']]]]]],
- ['.', ';']]
 
-
-def traverse(tree):
-    if isinstance(tree, list):
-        for it in tree:
-            parent = tree[0]
-            for subit in traverse(it):
-                # if subit[-1] != parent or subit[-1] == ',':
-                yield [parent] + subit
-    else:
-        yield [tree]
-
-
-def getelements(lst, key, res=None):
-    if res is None:
-        res = []
-    for e in lst:
-        if isinstance(e, list):
-            if e[0] == key:
-                res.append(e)
-            else:
-                getelements(e, key, res)
-    return res
-
-
-def from_list(lst, root=None, depth=0):
-    print depth
+def from_list(lst, root=None):
     lst = list(lst)
-    if root is None:
-        root = Node(tag=lst.pop(0))
+    if not lst:
+        return
     for e in lst:
         if is_terminal(e):
             tag, children = e
             print "terminal", tag, "with root", root.tag
-            depth -= 1
             root.add_child(Node(tag=tag, children=children, parent=root))
         else:
             e = list(e)
             tag, children = e.pop(0), e
             print "non terminal", tag, "with root", root.tag
-            depth += 1
-            root = Node(tag=tag, parent=root)
-            from_list(children, root=root, depth=depth)
-    return root
+            newroot = Node(tag=tag, parent=root)
+            root.add_child(newroot)
+            from_list(children, root=newroot)
 
 
 def is_terminal(e):
-    if isinstance(e, list) and \
-        len(e) == 2 and all([type(i) in (unicode, str) for i in e]):
+    if isinstance(e, (tuple, list)) and \
+       len(e) == 2 and all([isinstance(i, (unicode, str)) for i in e]):
         return True
     return False
 
@@ -311,6 +236,13 @@ def branches(root, branch):
         node = [n for n in root.children if n.tag == branch[0]][-1]
     branches(node, branch[1:])
 
-d = Node(tag=u'IP-MAT')
-for b in traverse(ex2):
-    branches(d, b[1:])
+
+# def from_list(tree):
+#     root = Node(tag=tree[0])
+#     for b in traverse(tree):
+#         print b
+#         branches(root, b[1:])
+#     return root
+root = Node(tag=ex[0])
+tree = from_list(ex[1:], root=root)
+# x = get_psd_sents()
