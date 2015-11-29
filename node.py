@@ -92,3 +92,13 @@ def leaf_branches(tree):
                     yield [parent] + subit
     else:
         yield []
+
+
+def tree_from_list(lst):
+    "utility function"
+    tree = lst[0]
+    root_tag = tree[0]
+    assert isinstance(root_tag, (str, unicode))
+    root = Node(tag=root_tag)
+    from_list(tree[1:], root=root)
+    return root
