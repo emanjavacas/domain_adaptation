@@ -1,6 +1,13 @@
+
+from utils import take
+
 import os
+import re
+import glob
 import codecs
 
+
+# modify root
 root = "/Users/quique/corpora/PENN-CORPORA/"
 main_dirs = ["PPCEME-RELEASE-2/corpus/",
              "PPCMBE-RELEASE-1/corpus/",
@@ -19,7 +26,32 @@ def read_info(in_fn=info_file):
     return result
 
 
-def pos_from_file(fname):
+def abs_path(basename, ext):
+    fnames = glob.glob(root + "*RELEASE*/corpus/*/*." + ext)
+    fname = ".".join([basename, ext])
+    for f in fnames:
+        if fname in f:
+            return fname
+
+
+def files_in_range(from_y, to_y, ext='pos'):
+    info = read_info()
+    result = []
+    for f, row in info.items():
+        year = int(row[0].split('-')[0])
+        if from_y <= year < to_y:
+            result.append(abs_path(f, ext))
+    return result
+
+
+def simplify_tag(tag):
+    if '+' in tag:
+        tag = tag.split('+')[0]
+    tag = re.sub(r'[0-9]+$', '', tag)
+    return tag
+
+
+def pos_from_file(fname, rem_id=True, simple_tags=True):
     with codecs.open(fname, "r", "utf-8") as f:
         sent = []
         for l in f:
@@ -32,8 +64,22 @@ def pos_from_file(fname):
                 yield sent
                 sent = []
                 continue
-            word, token = l.split("/")
-            sent.append((word, token))
+            word, tag = l.split("/")
+            if tag == 'ID' and rem_id:
+                continue
+            tag = simplify_tag(tag) if simple_tags else tag
+            sent.append((word, tag))
+
+
+def pos_from_files(files, max_sents=float('inf'), rem_id=True):
+    sents = (sent for f in files for sent in pos_from_file(f, rem_id=rem_id))
+    return take(sents, max_sents)
+
+
+def pos_from_range(from_y, to_y, max_sents=float('inf'), rem_id=True):
+    files = files_in_range(from_y, to_y)
+    fs = pos_from_files(files, max_sents=max_sents, rem_id=rem_id)
+    return fs
 
 
 def tree_from_file(fname):
@@ -48,12 +94,11 @@ def tree_from_file(fname):
                 tree_string += l
 
 
-def get_pos_sents():
-    target = "pos"
-    for d in main_dirs:
-        for f in os.listdir(root + d + target):
-            for pos in pos_from_file(root + d + target + "/" + f):
-                yield pos
+def get_pos(simple_tags=True):
+    fnames = glob.glob(root + "*RELEASE*/corpus/*/*.pos")
+    for f in fnames:
+        for pos in pos_from_file(f, simple_tags=simple_tags):
+            yield pos
 
 
 # kindly taken from http://norvig.com/lispy.html
@@ -85,9 +130,8 @@ def parse(string):
     return read_from_tokens(tokenize(string))
 
 
-def get_psd_sents():
-    target = "psd"
-    for d in main_dirs:
-        for f in os.listdir(root + d + target):
-            for tree in tree_from_file(root + d + target + "/" + f):
-                yield tree
+def get_psd():
+    fnames = glob.glob(root + "*RELEASE*/corpus/*/*.psd")
+    for f in fnames:
+        for tree in tree_from_file(f):
+            yield tree

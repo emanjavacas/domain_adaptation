@@ -39,11 +39,10 @@ class Node(object):
                         yield child
 
     def __repr__(self):
-        if not self.is_terminal:
-            s = "<Node: %s; parent: %s>" % (self.tag, self.parent)
+        if self.is_terminal:
+            s = "Node<type='%s'; value='%s'>" % (self.tag, self.children)
         else:
-            s = "<Node: %s, %s; parent: %s>" \
-                % (self.tag, self.children, self.parent)
+            s = "Node<type='%s'; children=%d>" % (self.tag, len(self.children))
         return s
 
 
