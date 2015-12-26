@@ -10,6 +10,36 @@ import re
 import glob
 import codecs
 
+genre_mapping = {
+    '"BIBLE"': '"RELIGION"',
+    '"BIOGRAPHY_AUTO"': '"DIARY"',
+    '"BIOGRAPHY_LIFE_OF_SAINT"': '"NARRATIVE"',
+    '"BIOGRAPHY_OTHER"': '"NARRATIVE"',
+    '"DIARY_PRIV"': '"DIARY"',
+    '"DRAMA_COMEDY"': '"FICTION"',
+    '"EDUC_TREATISE"': '"NONFICTION"',
+    '"FICTION"': '"FICTION"',
+    '"HANDBOOK_ASTRO"': '"NONFICTION"',
+    '"HANDBOOK_MEDICINE"': '"NONFICTION"',
+    '"HANDBOOK_OTHER"': '"NONFICTION"',
+    '"HISTORY"': '"NARRATIVE"',
+    '"HOMILY"': '"RELIGION"',
+    '"HOMILY_POETRY"': '"RELIGION"',
+    '"LAW"': '"NONFICTION"',
+    '"LETTERS_NON-PRIV"': '"LETTERS"',
+    '"LETTERS_PRIV"': '"LETTERS"',
+    '"PHILOSOPHY"': '"NARRATIVE"',
+    '"PHILOSOPHY/FICTION"': '"NARRATIVE"',
+    '"PROCEEDINGS_TRIAL"': '"NONFICTION"',
+    '"RELIG_TREATISE"': '"RELIGION"',
+    '"ROMANCE"': '"FICTION"',
+    '"RULE"': '"NONFICTION"',
+    '"SCIENCE_MEDICINE"': '"NONFICTION"',
+    '"SCIENCE_OTHER"': '"NONFICTION"',
+    '"SERMON"': '"RELIGION"',
+    '"TRAVELOGUE"': '"DIARY"'
+}
+
 
 def read_info(in_fn=root + "corpus_data.csv"):
     result = {}
@@ -27,7 +57,7 @@ def abs_path(basename, ext):
     fname = ".".join([basename, ext])
     for f in fnames:
         if fname in f:
-            return fname
+            return f
 
 
 def files_in_range(from_y, to_y, ext='pos'):
