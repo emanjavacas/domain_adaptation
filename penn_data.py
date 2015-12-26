@@ -1,21 +1,17 @@
 
 from utils import take
 
-import os
+try:
+    from config import root
+except:
+    raise Warning("set global variable ``root'' to the appropriate value")
+
 import re
 import glob
 import codecs
 
 
-# modify root
-root = "/Users/quique/corpora/PENN-CORPORA/"
-main_dirs = ["PPCEME-RELEASE-2/corpus/",
-             "PPCMBE-RELEASE-1/corpus/",
-             "PPCME2-RELEASE-3/corpus/"]
-info_file = root + "corpus_data.csv"
-
-
-def read_info(in_fn=info_file):
+def read_info(in_fn=root + "corpus_data.csv"):
     result = {}
     with open(in_fn, "r") as f:
         next(f)

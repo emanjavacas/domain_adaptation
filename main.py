@@ -1,6 +1,6 @@
 
 from seqlearn_reader import features, load_data
-from penn_data import pos_from_range, get_pos
+from penn_data import pos_from_range
 
 from seqlearn.perceptron import StructuredPerceptron
 from sklearn.metrics import accuracy_score
