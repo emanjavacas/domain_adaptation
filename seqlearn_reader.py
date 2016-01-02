@@ -1,10 +1,12 @@
 
+from itertools import tee
 from collections import Counter
 
-from sklearn.feature_extraction import FeatureHasher, DictVectorizer
+from sklearn.feature_extraction import FeatureHasher
 
 
-def features(tokens, tags, i, window=2):
+def features(tokens, i, tags, window=2):
+    "feature function"
     length = len(tokens)
     target = tokens[i]
     yield 'bias'
@@ -21,53 +23,92 @@ def features(tokens, tags, i, window=2):
 
 
 def clf_predict(tokens, dv, clf, window=2):
+    "incrementally predicts computing tag-based features"
     tags = []
     for i in range(len(tokens)):
-        feats = features(tokens, tags, i, window)
+        feats = features(tokens, i, tags, window)
+        tag = clf.predict(dv.transform(Counter(feats))).item()
+        tags.extend([tag])
+    assert len(tags) == len(tokens)
+    return tags
 
 
 def sent_sequences(sents, feature_fn, labels, lengths):
+    "transforms a iterator over sents into a generator over features per token"
     for s in sents:
         length = len(s)
         words, tags = zip(*s)
         labels.extend(tags)
         lengths.append(length)
         for i in range(length):
-            yield features(words, tags, i)
+            yield features(words, i, tags)
 
 
-def load_data(sents, features=features):
+def load_data_hasher(sents, features=features, compute_feats=False):
+    "computes seqlearn input data using a feature hasher"
     y, lengths = [], []
     X_raw = sent_sequences(sents, features, y, lengths)
-    fh = FeatureHasher(input_type='string')
+    if compute_feats:
+        X_raw, X_raw2 = tee(X_raw)
+        counter = Counter(feats for feats in X_raw2)
+        n_features = int(len(counter) * 1.25)
+        fh = FeatureHasher(input_type='string', n_features=n_features)
+    else:
+        fh = FeatureHasher(input_type='string')
     X = fh.transform(X_raw)
     return X, y, lengths
 
 
 def load_data_dict(sents, dv, features=features):
+    "does not overwrite feature vectorizer"
     y, lengths = [], []
     X_raw = sent_sequences(sents, features, y, lengths)
-    X = dv.fit_transform(Counter(s) for s in X_raw)
+    if hasattr(dv, 'vocabulary_'):
+        X = dv.transform(Counter(w) for w in X_raw)
+    else:
+        X = dv.fit_transform(Counter(w) for w in X_raw)
     return X, y, lengths
 
+# # train1
+# sents = pos_from_range(1400, 1500, 5000)
+# dv1 = DictVectorizer()
+# X, y, lengths = load_data_dict(sents, dv1)
+# clf1 = StructuredPerceptron(verbose=True, max_iter=10)
+# clf1.fit(X, y, lengths)
 
-# from penn_data import pos_from_range
-# from seqlearn.perceptron import StructuredPerceptron
+# # train2
+# sents = pos_from_range(1400, 1500, 5000)
+# dv2 = DictVectorizer()
+# X, y, lengths = load_data_dict(sents, dv2)
+# clf2 = StructuredPerceptron(verbose=True, max_iter=10)
+# clf2.fit(X, y, lengths)
 
-sents = pos_from_range(1400, 1500, 50)
-dv = DictVectorizer()
-X, y, lengths = load_data_dict(sents, dv)
-split_lengths = int(len(lengths) * 0.9)
-split = sum(lengths[:split_lengths])
-X_train, y_train, lengths_train = X[:split,], y[:split], lengths[:split_lengths]
-X_test, y_test, lengths_test = X[split:,], y[split:], lengths[split_lengths:]
-clf = StructuredPerceptron(verbose=True, max_iter=10)
-clf.fit(X_train, y_train, lengths_train)
+# # test
+# sents = pos_from_range(1500, 1600, 1000)
+# X2, y2, lengths2 = [], [], []
+# for sent in sents:
+#     words, tags = zip(*sent)
+#     lengths = len(words)
+#     lengths2.append(lengths)
+#     X2.extend([features(words, i, []) for i in range(len(words))])
+#     y2.extend(tags)
 
-feats = 
+# X2 = dv2.transform(Counter(w) for w in X2)
+# y_pred = clf2.predict(X2, lengths2)
 
-# dv = DictVectorizer()
-# D = [{'dog': 1, 'cat': 2, 'elephant': 4}, {'dog': 2, 'run': 5}]
-# C = [{'bear': 1, 'butterfly': 2, 'deer': 4}, {'deer': 2, 'apple': 5}]
-# DD = dv.fit_transform(D)
-# CC = dv.transform(C)
+# sents = pos_from_range(1500, 1600, 1000)
+# sents = shuffle_seq(sents)[:100]
+
+# real_tags = []
+# with_tags = []
+# without_tags = []
+# for sent in sents:
+#     words, tags = zip(*sent)
+#     real_tags.extend(tags)
+
+#     pred = clf_predict(words, dv, clf)
+#     with_tags.extend(pred)
+
+#     feats = (features(words, i, []) for i in range(len(words)))
+#     pred = clf.predict(dv.transform(Counter(f) for f in feats))
+#     without_tags.extend(pred)

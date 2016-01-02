@@ -14,7 +14,7 @@ def take(g, n):
         c += 1
 
 
-def shuffle(seq, seed=448):
+def shuffle_seq(seq, seed=448):
     return sorted(seq, key=lambda k: random.random())
 
 
@@ -46,11 +46,40 @@ def per_tag_scores(y_true, y_pred):
         true_tag = y_true[i]
         guessed_tag = y_pred[i]
         if true_tag == guessed_tag:
-            scores[true_tag]['truePositives'] += 1
+            scores[true_tag]['tp'] += 1
         else:
-            scores[true_tag]['falseNegatives'] += 1
-            scores[guessed_tag]['falsePositives'] += 1
+            scores[true_tag]['fn'] += 1
+            scores[guessed_tag]['fp'] += 1
     return dict(scores)
+
+
+def recall(tp=0, fn=0, fp=0):
+    return np.float64(tp) / (tp + fn)
+
+
+def precision(tp=0, fn=0, fp=0):
+    return np.float64(tp) / (tp + fp)
+
+
+def f1(tp=0, fn=0, fp=0):
+    den = 2 * tp
+    num = den + fp + fn
+    return np.float64(den) / num
+
+
+def sorted_scores(scores, fn=precision):
+    """
+    sorted scores per tag by tag frequency.
+    scores = per_tag_scores(y_true, y_pred)
+    sorted_scores(scores)
+    >>> [(u'N', 0.91368227731864093),
+         (u'P', 0.97044804575786459),
+         (u',', 0.9981412639405205),
+         (u'PRO', 0.98971193415637859),
+         ...]
+    """
+    return sorted([(k, fn(**v)) for k, v in scores.items()],
+                  key=lambda x: sum(scores[x[0]].values()), reverse=True)
 
 
 def pickle_this(fname, obj):

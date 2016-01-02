@@ -1,5 +1,5 @@
 
-from utils import take
+from utils import take, shuffle_seq
 
 try:
     from config import root
@@ -39,6 +39,8 @@ genre_mapping = {
     '"SERMON"': '"RELIGION"',
     '"TRAVELOGUE"': '"DIARY"'
 }
+
+INF = float('inf')
 
 
 def read_info(in_fn=root + "corpus_data.csv"):
@@ -97,15 +99,17 @@ def pos_from_file(fname, rem_id=True, simple_tags=True):
             sent.append((word, tag))
 
 
-def pos_from_files(files, max_sents=float('inf'), rem_id=True):
+def pos_from_fs(files, max_sents=INF, rem_id=True, shuffle=False):
     sents = (sent for f in files for sent in pos_from_file(f, rem_id=rem_id))
+    if shuffle:
+        return take(shuffle_seq(sents), max_sents)
     return take(sents, max_sents)
 
 
-def pos_from_range(from_y, to_y, max_sents=float('inf'), rem_id=True):
+def pos_from_range(from_y, to_y, max_sents=INF, rem_id=True, shuffle=False):
     files = files_in_range(from_y, to_y)
-    fs = pos_from_files(files, max_sents=max_sents, rem_id=rem_id)
-    return fs
+    r = pos_from_fs(files, max_sents=max_sents, rem_id=rem_id, shuffle=shuffle)
+    return r
 
 
 def tree_from_file(fname):
