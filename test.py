@@ -45,5 +45,5 @@ ex2 = ['A',
           ['A3522', 'tag']]]],
        ['A4', 'tag']]
 
-root = Node(tag=ex2[0])
-from_list(ex2[1:], root=root)
+#root = Node(tag=ex2[0])
+#from_list(ex2[1:], root=root)

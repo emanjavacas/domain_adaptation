@@ -42,5 +42,5 @@ if __name__ == '__main__':
         pickle_this(prefix + '_y_test', y_test)
         pickle_this(prefix + '_y_pred', y_pred)
         pickle_this(prefix + '_labels', labels)
-        pickle_this(prefix + '_clf', clf)
+#        pickle_this(prefix + '_clf', clf)
         print("Accuracy: %.3f" % (100 * accuracy_score(y_test, y_pred)))

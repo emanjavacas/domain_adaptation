@@ -3,6 +3,7 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 import cPickle as p
+import json
 from datetime import datetime
 from collections import defaultdict
 
@@ -86,3 +87,14 @@ def pickle_this(fname, obj):
     fname += '_' + datetime.now().isoformat() + '.pickle'
     with open(fname, 'w') as f:
         p.dump(obj, f)
+
+        
+def unpickle_this(fname):
+    with open(fname, 'r') as f:
+        return p.load(f)
+
+    
+def serialize_results(fname, y_test, y_pred, labels):
+    result = {"y_test": y_test, "y_pred": y_pred, "labels": labels}
+    with codecs.open(fname, "w+", "utf-8") as f:
+        json.dump(result, f)

@@ -6,6 +6,7 @@ try:
 except:
     raise Warning("set global variable ``root'' to the appropriate value")
 
+import os
 import re
 import glob
 import codecs
@@ -43,7 +44,7 @@ genre_mapping = {
 INF = float('inf')
 
 
-def read_info(in_fn=root + "corpus_data.csv"):
+def read_info(in_fn=os.path.join(root, "corpus_data.csv")):
     result = {}
     with open(in_fn, "r") as f:
         next(f)

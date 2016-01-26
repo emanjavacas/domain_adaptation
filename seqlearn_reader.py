@@ -22,17 +22,6 @@ def features(tokens, i, tags, window=2):
             yield 'tag[%d]:{%s}' % (idx - i, tags[idx])
 
 
-def clf_predict(tokens, dv, clf, window=2):
-    "incrementally predicts computing tag-based features"
-    tags = []
-    for i in range(len(tokens)):
-        feats = features(tokens, i, tags, window)
-        tag = clf.predict(dv.transform(Counter(feats))).item()
-        tags.extend([tag])
-    assert len(tags) == len(tokens)
-    return tags
-
-
 def sent_sequences(sents, feature_fn, labels, lengths):
     "transforms a iterator over sents into a generator over features per token"
     for s in sents:
@@ -85,30 +74,10 @@ def load_data_dict(sents, dv, features=features):
 
 # # test
 # sents = pos_from_range(1500, 1600, 1000)
-# X2, y2, lengths2 = [], [], []
+# X_exp, y_exp, lengths_exp = [], [], []
 # for sent in sents:
 #     words, tags = zip(*sent)
 #     lengths = len(words)
-#     lengths2.append(lengths)
-#     X2.extend([features(words, i, []) for i in range(len(words))])
-#     y2.extend(tags)
-
-# X2 = dv2.transform(Counter(w) for w in X2)
-# y_pred = clf2.predict(X2, lengths2)
-
-# sents = pos_from_range(1500, 1600, 1000)
-# sents = shuffle_seq(sents)[:100]
-
-# real_tags = []
-# with_tags = []
-# without_tags = []
-# for sent in sents:
-#     words, tags = zip(*sent)
-#     real_tags.extend(tags)
-
-#     pred = clf_predict(words, dv, clf)
-#     with_tags.extend(pred)
-
-#     feats = (features(words, i, []) for i in range(len(words)))
-#     pred = clf.predict(dv.transform(Counter(f) for f in feats))
-#     without_tags.extend(pred)
+#     lengths_exp.append(lengths)
+#     X_exp.extend([features(words, i, []) for i in range(len(words))])
+#     y_exp.extend(tags)
