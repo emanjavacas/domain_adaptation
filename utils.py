@@ -101,6 +101,7 @@ def serialize_results(fname, y_true, y_pred, labels):
     with codecs.open(fname, "w+", "utf-8") as f:
         json.dump(result, f)
 
+        
 def deserialize_results(fname):
     with codecs.open(fname, "r+", "utf-8") as f:
         results = json.load(f)
