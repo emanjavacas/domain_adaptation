@@ -1,5 +1,5 @@
 
-from utils import pickle_this
+from utils import serialize_results
 from seqlearn_reader import load_data_hasher, load_data_dict
 from penn_data import pos_from_range
 
@@ -38,9 +38,7 @@ if __name__ == '__main__':
         y_pred = clf.predict(X_test, lengths_test)
         prefix = "models/" + str(start)
         labels = clf.classes_
-        cm = confusion_matrix(y_test, y_pred, labels=labels)
-        pickle_this(prefix + '_y_test', y_test)
-        pickle_this(prefix + '_y_pred', y_pred)
-        pickle_this(prefix + '_labels', labels)
-#        pickle_this(prefix + '_clf', clf)
+        #cm = confusion_matrix(y_test, y_pred, labels=labels)
+        serialize_results(prefix, y_true=y_test, y_pred=y_pred, labels=labels)
+
         print("Accuracy: %.3f" % (100 * accuracy_score(y_test, y_pred)))

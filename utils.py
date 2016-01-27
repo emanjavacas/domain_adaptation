@@ -2,6 +2,7 @@
 import random
 import matplotlib.pyplot as plt
 import numpy as np
+import codecs
 import cPickle as p
 import json
 from datetime import datetime
@@ -84,7 +85,7 @@ def sorted_scores(scores, fn=precision):
 
 
 def pickle_this(fname, obj):
-    fname += '_' + datetime.now().isoformat() + '.pickle'
+    fname += '_' + str(datetime.time(datetime.now())) + '.pickle'
     with open(fname, 'w') as f:
         p.dump(obj, f)
 
@@ -94,7 +95,13 @@ def unpickle_this(fname):
         return p.load(f)
 
     
-def serialize_results(fname, y_test, y_pred, labels):
-    result = {"y_test": y_test, "y_pred": y_pred, "labels": labels}
+def serialize_results(fname, y_true, y_pred, labels):
+    result = {"y_true": y_true, "y_pred": y_pred, "labels": labels}
+    fname += "_" + str(datetime.time(datetime.now())) + ".json"
     with codecs.open(fname, "w+", "utf-8") as f:
         json.dump(result, f)
+
+def deserialize_results(fname):
+    with codecs.open(fname, "r+", "utf-8") as f:
+        results = json.load(f)
+        return results["y_true"], results["y_pred"], results["labels"]
