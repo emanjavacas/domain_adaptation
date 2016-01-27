@@ -1,7 +1,5 @@
 
 import random
-import matplotlib.pyplot as plt
-import numpy as np
 import codecs
 import cPickle as p
 import json
@@ -16,72 +14,27 @@ def take(g, n):
         c += 1
 
 
+def destruct(d, *args):
+    return (d[arg] for arg in args)
+
+
+def intersection(*seqs):
+    a, rest = list(seqs).pop(), seqs
+    return [set(a) & set(s) for s in rest][0]
+
+
+def split_sents(sents):
+    X = []
+    y = []
+    for sent in sents:
+        words, tags = zip(*sent)
+        X.extend(words)
+        y.extend(tags)
+    return X, y
+
+
 def shuffle_seq(seq, seed=448):
     return sorted(seq, key=lambda k: random.random())
-
-
-def plot_conf_matrix(cm, labels, title='Confusion Matrix', cmap=plt.cm.OrRd):
-    plt.imshow(cm, interpolation='nearest', cmap=cmap, aspect='auto')
-    plt.title(title)
-    plt.colorbar()
-    n_ticks = np.arange(len(labels))
-    plt.xticks(n_ticks, labels, fontsize=8, rotation=45)
-    plt.yticks(n_ticks, labels, fontsize=8)
-    plt.tight_layout()
-    plt.xlabel('Predicted label', fontsize=14)
-    plt.ylabel('True label', fontsize=14)
-
-
-def normalize_cm(cm):
-    total_rows = np.asarray(sum(np.transpose(cm)), dtype=np.float)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        cm_norm = cm / total_rows
-        cm_norm[cm_norm == np.inf] = 0
-        cm_norm = np.nan_to_num(cm_norm)
-        return cm_norm
-
-
-def per_tag_scores(y_true, y_pred):
-    scores = defaultdict(lambda: defaultdict(int))
-    assert len(y_true) == len(y_pred)
-    for i in range(len(y_true)):
-        true_tag = y_true[i]
-        guessed_tag = y_pred[i]
-        if true_tag == guessed_tag:
-            scores[true_tag]['tp'] += 1
-        else:
-            scores[true_tag]['fn'] += 1
-            scores[guessed_tag]['fp'] += 1
-    return dict(scores)
-
-
-def recall(tp=0, fn=0, fp=0):
-    return np.float64(tp) / (tp + fn)
-
-
-def precision(tp=0, fn=0, fp=0):
-    return np.float64(tp) / (tp + fp)
-
-
-def f1(tp=0, fn=0, fp=0):
-    den = 2 * tp
-    num = den + fp + fn
-    return np.float64(den) / num
-
-
-def sorted_scores(scores, fn=precision):
-    """
-    sorted scores per tag by tag frequency.
-    scores = per_tag_scores(y_true, y_pred)
-    sorted_scores(scores)
-    >>> [(u'N', 0.91368227731864093),
-         (u'P', 0.97044804575786459),
-         (u',', 0.9981412639405205),
-         (u'PRO', 0.98971193415637859),
-         ...]
-    """
-    return sorted([(k, fn(**v)) for k, v in scores.items()],
-                  key=lambda x: sum(scores[x[0]].values()), reverse=True)
 
 
 def pickle_this(fname, obj):
@@ -96,7 +49,9 @@ def unpickle_this(fname):
 
     
 def serialize_results(fname, y_true, y_pred, labels):
-    result = {"y_true": y_true, "y_pred": y_pred, "labels": labels}
+    result = {"y_true": list(y_true),
+              "y_pred": list(y_pred),
+              "labels": list(labels)}
     fname += "_" + str(datetime.time(datetime.now())) + ".json"
     with codecs.open(fname, "w+", "utf-8") as f:
         json.dump(result, f)
@@ -106,3 +61,7 @@ def deserialize_results(fname):
     with codecs.open(fname, "r+", "utf-8") as f:
         results = json.load(f)
         return results["y_true"], results["y_pred"], results["labels"]
+
+
+def tags_intersection(results):
+    return intersection(*(result[0] for result in results))

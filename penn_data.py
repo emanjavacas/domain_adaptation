@@ -85,7 +85,7 @@ def pos_from_file(fname, rem_id=True, simple_tags=True):
         sent = []
         for l in f:
             l = l.strip()
-            if l.startswith("<") or l.startswith("{"):  # ignore meta
+            if l.startswith("<") or l.startswith("{"):  # ignore metadata
                 continue
             if not l and not sent:  # blank lines
                 continue
@@ -100,7 +100,7 @@ def pos_from_file(fname, rem_id=True, simple_tags=True):
             sent.append((word, tag))
 
 
-def pos_from_fs(files, max_sents=INF, rem_id=True, shuffle=False):
+def pos_from_files(files, max_sents=INF, rem_id=True, shuffle=False):
     sents = (sent for f in files for sent in pos_from_file(f, rem_id=rem_id))
     if shuffle:
         return take(shuffle_seq(sents), max_sents)
@@ -109,7 +109,7 @@ def pos_from_fs(files, max_sents=INF, rem_id=True, shuffle=False):
 
 def pos_from_range(from_y, to_y, max_sents=INF, rem_id=True, shuffle=False):
     files = files_in_range(from_y, to_y)
-    r = pos_from_fs(files, max_sents=max_sents, rem_id=rem_id, shuffle=shuffle)
+    r = pos_from_files(files, max_sents=max_sents, rem_id=rem_id, shuffle=shuffle)
     return r
 
 

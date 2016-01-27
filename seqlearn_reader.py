@@ -5,7 +5,7 @@ from collections import Counter
 from sklearn.feature_extraction import FeatureHasher
 
 
-def features(tokens, i, tags, window=2):
+def features(tokens, i, tags=None, window=2):
     "feature function"
     length = len(tokens)
     target = tokens[i]
@@ -22,7 +22,7 @@ def features(tokens, i, tags, window=2):
             yield 'tag[%d]:{%s}' % (idx - i, tags[idx])
 
 
-def sent_sequences(sents, feature_fn, labels, lengths):
+def sent_sequences(sents, feature_fn, labels, lengths, feature_tags=None):
     "transforms a iterator over sents into a generator over features per token"
     for s in sents:
         length = len(s)
@@ -30,14 +30,14 @@ def sent_sequences(sents, feature_fn, labels, lengths):
         labels.extend(tags)
         lengths.append(length)
         for i in range(length):
-            yield features(words, i, tags)
+            yield features(words, i, tags if feature_tags else None)
 
 
-def load_data_hasher(sents, features=features, compute_feats=False):
+def load_data_hasher(sents, features=features, feature_tags=None, compute_num_feats=False):
     "computes seqlearn input data using a feature hasher"
     y, lengths = [], []
-    X_raw = sent_sequences(sents, features, y, lengths)
-    if compute_feats:
+    X_raw = sent_sequences(sents, features, y, lengths, feature_tags)
+    if compute_num_feats:
         X_raw, X_raw2 = tee(X_raw)
         counter = Counter(feats for feats in X_raw2)
         n_features = int(len(counter) * 1.25)
@@ -48,36 +48,12 @@ def load_data_hasher(sents, features=features, compute_feats=False):
     return X, y, lengths
 
 
-def load_data_dict(sents, dv, features=features):
+def load_data_dict(sents, dv, features=features, feature_tags=None):
     "does not overwrite feature vectorizer"
     y, lengths = [], []
-    X_raw = sent_sequences(sents, features, y, lengths)
+    X_raw = sent_sequences(sents, features, y, lengths, feature_tags)
     if hasattr(dv, 'vocabulary_'):
         X = dv.transform(Counter(w) for w in X_raw)
     else:
         X = dv.fit_transform(Counter(w) for w in X_raw)
     return X, y, lengths
-
-# # train1
-# sents = pos_from_range(1400, 1500, 5000)
-# dv1 = DictVectorizer()
-# X, y, lengths = load_data_dict(sents, dv1)
-# clf1 = StructuredPerceptron(verbose=True, max_iter=10)
-# clf1.fit(X, y, lengths)
-
-# # train2
-# sents = pos_from_range(1400, 1500, 5000)
-# dv2 = DictVectorizer()
-# X, y, lengths = load_data_dict(sents, dv2)
-# clf2 = StructuredPerceptron(verbose=True, max_iter=10)
-# clf2.fit(X, y, lengths)
-
-# # test
-# sents = pos_from_range(1500, 1600, 1000)
-# X_exp, y_exp, lengths_exp = [], [], []
-# for sent in sents:
-#     words, tags = zip(*sent)
-#     lengths = len(words)
-#     lengths_exp.append(lengths)
-#     X_exp.extend([features(words, i, []) for i in range(len(words))])
-#     y_exp.extend(tags)
