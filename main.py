@@ -30,16 +30,18 @@ def model_for_range_dict(train=(1700, 1800, 10000), test=(1400, 1500, 2000)):
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="run training")
+    parser.add_argument("prefix")
+    args = parser.parse_args()
     test = (1400, 1450, 2000)
     for start in range(1450, 1850, 50):
         train = (start, start + 100, 20000)
         clf, featurizer, X_test, y_test, lengths_test = \
             model_for_range_hasher(train, test)
         y_pred = clf.predict(X_test, lengths_test)
-        prefix = "models/" + str(start)
         labels = clf.classes_
         #cm = confusion_matrix(y_test, y_pred, labels=labels)
-        serialize_results(prefix, y_true=y_test, y_pred=y_pred, labels=labels)
+        serialize_results(args.prefix, y_true=y_test, y_pred=y_pred, labels=labels)
         print("Training set size", len(X_train))        
         print("Test set size", len(X_test))       
         print("Accuracy: %.3f" % (100 * accuracy_score(y_test, y_pred)))
