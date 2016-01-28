@@ -42,8 +42,9 @@ if __name__ == '__main__':
             model_for_range_hasher(train, test)
         y_pred = clf.predict(X_test, lengths_test)
         labels = clf.classes_
+        prefix = "models/" + str(start) + "_" + args.prefix
         #cm = confusion_matrix(y_test, y_pred, labels=labels)
-        serialize_results(args.prefix, y_true=y_test, y_pred=y_pred, labels=labels)
+        serialize_results(prefix, y_true=y_test, y_pred=y_pred, labels=labels)
         print("Training set size", len(X_train))        
         print("Test set size", len(X_test))       
         print("Accuracy: %.3f" % (100 * accuracy_score(y_test, y_pred)))
