@@ -1,7 +1,10 @@
 
 import random
+<<<<<<< HEAD
 import os
 import re
+=======
+>>>>>>> a08a6cfb1855c739dacc3ae74f0ea6f36bb16d74
 import codecs
 import cPickle as p
 import json
@@ -18,6 +21,7 @@ def take(g, n):
 
 def destruct(d, *args):
     return (d[arg] for arg in args)
+<<<<<<< HEAD
 
 
 def intersection(*seqs):
@@ -35,6 +39,25 @@ def split_sents(sents):
     return X, y
 
 
+=======
+
+
+def intersection(*seqs):
+    a, rest = list(seqs).pop(), seqs
+    return [set(a) & set(s) for s in rest][0]
+
+
+def split_sents(sents):
+    X = []
+    y = []
+    for sent in sents:
+        words, tags = zip(*sent)
+        X.extend(words)
+        y.extend(tags)
+    return X, y
+
+
+>>>>>>> a08a6cfb1855c739dacc3ae74f0ea6f36bb16d74
 def shuffle_seq(seq, seed=448):
     return sorted(seq, key=lambda k: random.random())
 
@@ -60,6 +83,7 @@ def serialize_results(fname, y_true, y_pred, labels):
 
         
 def deserialize_results(fname):
+<<<<<<< HEAD
     try:
         with codecs.open(fname, "r+", "utf-8") as f:
             results = json.load(f)
@@ -78,6 +102,11 @@ def read_year(fname):
 def read_results(files, read_year_fn=read_year):
     results = [(deserialize_results(f), read_year_fn(f)) for f in sorted(files)]
     return zip(*results)
+=======
+    with codecs.open(fname, "r+", "utf-8") as f:
+        results = json.load(f)
+        return results["y_true"], results["y_pred"], results["labels"]
+>>>>>>> a08a6cfb1855c739dacc3ae74f0ea6f36bb16d74
 
 
 def tags_intersection(results):
