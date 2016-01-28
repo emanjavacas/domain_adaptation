@@ -1,4 +1,6 @@
 
+import argparse
+
 from utils import serialize_results
 from seqlearn_reader import load_data_hasher, load_data_dict
 from penn_data import pos_from_range
