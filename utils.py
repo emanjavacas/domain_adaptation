@@ -35,7 +35,8 @@ def split_sents(sents):
     return X, y
 
 
-def shuffle_seq(seq, seed=448):
+def shuffle_seq(seq, seed):
+    random.seed(seed)
     return sorted(seq, key=lambda k: random.random())
 
 

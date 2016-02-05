@@ -117,10 +117,6 @@ def to_plotly_json(results, years, metric, tags, fname):
     with codecs.open(fname, "w+", "utf-8") as f:
         json.dump(plotly_obj, f)
             
-# y_true, y_pred, labels = deserialize_results("models/1500.json")
-# cm = confusion_matrix(y_true, y_pred)
-# plot_conf_matrix(cm, labels= labels)
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="evaluation")
     parser.add_argument("files", nargs='+')
@@ -137,7 +133,6 @@ if __name__ == "__main__":
     metrics = {"f1": f1, "precision": precision, "recall": recall}
     to_plotly_json(results, years, metrics[args.metric], tags, args.output)
     
-
 
 # from penn_data import pos_from_range
 # counts = dict()

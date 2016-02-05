@@ -62,14 +62,21 @@ def abs_path(basename, ext):
         if fname in f:
             return f
 
+def grep_file(prefix, ext):
+    fnames = glob.glob(root + "*RELEASE*/corpus/*/*." + ext)
+    for f in fnames:
+        basename = os.path.basename(f)
+        if basename.startswith(prefix):
+            return f
+
 
 def files_in_range(from_y, to_y, ext='pos'):
     info = read_info()
     result = []
     for f, row in info.items():
         year = int(row[0].split('-')[0])
-        if from_y <= year < to_y:
-            result.append(abs_path(f, ext))
+        if from_y <= year < to_y:            
+            result.append(grep_file(f, ext))
     return result
 
 
@@ -100,17 +107,15 @@ def pos_from_file(fname, rem_id=True, simple_tags=True):
             sent.append((word, tag))
 
 
-def pos_from_files(files, max_sents=INF, rem_id=True, shuffle=False):
+def pos_from_files(files, max_sents=INF, rem_id=True, shuffle=False, shuffle_seed=448):
     sents = (sent for f in files for sent in pos_from_file(f, rem_id=rem_id))
-    if shuffle:
-        return take(shuffle_seq(sents), max_sents)
-    return take(sents, max_sents)
+    return take(iter(shuffle_seq(sents, shuffle_seed)) if shuffle else sents, max_sents)
 
 
-def pos_from_range(from_y, to_y, max_sents=INF, rem_id=True, shuffle=False):
+def pos_from_range(from_y, to_y, max_sents=INF, rem_id=True, shuffle=False, shuffle_seed=448):
     files = files_in_range(from_y, to_y)
-    r = pos_from_files(files, max_sents=max_sents, rem_id=rem_id, shuffle=shuffle)
-    return r
+    sents = pos_from_files(files, max_sents=max_sents, rem_id=rem_id, shuffle=shuffle)
+    return sents
 
 
 def tree_from_file(fname):

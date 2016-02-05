@@ -22,7 +22,7 @@ def features(tokens, i, tags=None, window=2):
             yield 'tag[%d]:{%s}' % (idx - i, tags[idx])
 
 
-def sent_sequences(sents, feature_fn, labels, lengths, feature_tags=None):
+def sent_sequences(sents, feature_fn, labels, lengths, tag_features=None):
     "transforms a iterator over sents into a generator over features per token"
     for s in sents:
         length = len(s)
@@ -30,13 +30,13 @@ def sent_sequences(sents, feature_fn, labels, lengths, feature_tags=None):
         labels.extend(tags)
         lengths.append(length)
         for i in range(length):
-            yield features(words, i, tags if feature_tags else None)
+            yield features(words, i, tags if tag_features else None)
 
 
-def load_data_hasher(sents, features=features, feature_tags=None, compute_num_feats=False):
+def load_data_hasher(sents, features=features, tag_features=None, compute_num_feats=False):
     "computes seqlearn input data using a feature hasher"
     y, lengths = [], []
-    X_raw = sent_sequences(sents, features, y, lengths, feature_tags)
+    X_raw = sent_sequences(sents, features, y, lengths, tag_features)
     if compute_num_feats:
         X_raw, X_raw2 = tee(X_raw)
         counter = Counter(feats for feats in X_raw2)
@@ -48,10 +48,10 @@ def load_data_hasher(sents, features=features, feature_tags=None, compute_num_fe
     return X, y, lengths
 
 
-def load_data_dict(sents, dv, features=features, feature_tags=None):
+def load_data_dict(sents, dv, features=features, tag_features=None):
     "does not overwrite feature vectorizer"
     y, lengths = [], []
-    X_raw = sent_sequences(sents, features, y, lengths, feature_tags)
+    X_raw = sent_sequences(sents, features, y, lengths, tag_features)
     if hasattr(dv, 'vocabulary_'):
         X = dv.transform(Counter(w) for w in X_raw)
     else:

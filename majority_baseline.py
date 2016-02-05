@@ -18,7 +18,7 @@ class MajorityBaseline(object):
             raise ValueError("Model hasn't been trained yet")
         return [self.word2tag.get(w.lower(), self.unknown) for w in X]
 
-    def fit(self, X, y):
+    def fit(self, X, y, **kwargs):
         counts = Counter(zip(X, y))
         results = {}
         for (w, t), c in counts.items():
